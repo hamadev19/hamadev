@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بنکۆی کۆنکان - Konkan Scoreboard</title>
+    <title>بنکۆی کۆنکان - بلیت و تیروپشک</title>
     <style>
         * {
             box-sizing: border-box;
@@ -21,13 +21,13 @@
             padding: 20px;
         }
         h1 {
-            font-size: 26px;
+            font-size: 24px;
             color: #38bdf8;
             margin-bottom: 5px;
             text-align: center;
         }
         .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #94a3b8;
             margin-bottom: 20px;
         }
@@ -40,6 +40,7 @@
             max-width: 600px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             margin-bottom: 15px;
+            text-align: center;
         }
         .input-group {
             display: flex;
@@ -79,6 +80,40 @@
         .btn-danger:hover {
             background: #e11d48;
         }
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        /* بەشی پیشاندانی ژمارە و بلیتەکان */
+        .number-box {
+            font-size: 40px;
+            font-weight: bold;
+            color: #f59e0b;
+            background: #090d16;
+            border: 2px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .tickets-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .ticket-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -93,14 +128,6 @@
         th {
             color: #38bdf8;
         }
-        .badge {
-            background: #10b981;
-            color: #fff;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
         .actions-cell {
             display: flex;
             gap: 4px;
@@ -111,20 +138,24 @@
             padding: 5px 8px;
             font-size: 12px;
         }
-        .footer-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .footer-btns button {
-            flex: 1;
-        }
     </style>
 </head>
 <body>
 
-    <h1>بنکۆی کۆنکان</h1>
-    <div class="subtitle">ژمێرەری خاڵ و بلیت (سیستمی ٢٠٠)</div>
+    <h1>بنکۆی کۆنکان - بلیت و ژمارە</h1>
+    <div class="subtitle">سیستمی دەرکەوتنی ژمارە و ٤ بلیتی جیاواز (بە ٢٠٠)</div>
+
+    <!-- بەشی دەرکەوتنی ژمارە و بلیتەکان لەسەر شاشە -->
+    <div class="card">
+        <h3>تیروپشکی ژمارە و بلیتەکان</h3>
+        <div class="number-box" id="displayNumber">---</div>
+        <button class="btn-success" onclick="generateRoundTickets()">پێدانی ٤ بلیتی جیاواز (بە ٢٠٠)</button>
+        
+        <div style="margin-top: 15px; font-weight: bold; color: #cbd5e1;">بلیتە جیاوازەکانی ئەم خولە:</div>
+        <div class="tickets-container" id="roundTicketsContainer">
+            <span style="color: #94a3b8; font-size: 13px;">هێشتا بلیت دروست نەکراوە... تکایە دوگمەکە بگرە</span>
+        </div>
+    </div>
 
     <!-- بەشی زیادکردنی یاریزان -->
     <div class="card">
@@ -135,13 +166,13 @@
     </div>
 
     <!-- تابلۆی خاڵەکان -->
-    <div class="card">
+    <div class="card" style="max-width: 100%;">
         <table>
             <thead>
                 <tr>
                     <th>ناو</th>
                     <th>کۆی خاڵ</th>
-                    <th>بلیتەکان (٢٠٠)</th>
+                    <th>بلیتەکان</th>
                     <th>کردارەکان</th>
                 </tr>
             </thead>
@@ -150,17 +181,47 @@
             </tbody>
         </table>
 
-        <div class="footer-btns">
-            <button class="btn-danger" onclick="resetScores()">سفرکردنەوەی خاڵەکان</button>
-            <button onclick="clearAll()">سڕینەوەی هەموویان</button>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn-danger" onclick="resetScores()" style="flex:1;">سفرکردنەوەی خاڵەکان</button>
+            <button onclick="clearAll()" style="flex:1;">سڕینەوەی هەموویان</button>
         </div>
     </div>
 
     <script>
-        let players = JSON.parse(localStorage.getItem("konkan_players_v2")) || [];
+        let players = JSON.parse(localStorage.getItem("konkan_v3_players")) || [];
 
         function saveData() {
-            localStorage.setItem("konkan_players_v2", JSON.stringify(players));
+            localStorage.setItem("konkan_v3_players", JSON.stringify(players));
+        }
+
+        // دروستکردنی ژمارەیەک و ٤ بلیتی جیاواز (هەر یەکەیان بە 200 یان جیاواز)
+        function generateRoundTickets() {
+            // ١. دەرکەوتنی ژمارەیەک لەسەر شاشە (بۆ نموونە لە 1 تا 100)
+            const randomNum = Math.floor(Math.random() * 90) + 10;
+            document.getElementById("displayNumberinnerText", "displayNumber").innerText = randomNum;
+            document.getElementById("displayNumber").innerText = randomNum;
+
+            // ٢. دروستکردنی 4 بلیتی جیاواز (کە هەر بلیتە و بە 200 دەژمێردرێت یان ژمارەی جیاوازن)
+            let ticketsContainer = document.getElementById("roundTicketsContainer");
+            ticketsContainer.innerHTML = "";
+
+            let generatedTickets = [];
+            while(generatedTickets.length < 4) {
+                // بلیتەکان دەبنە هێمایەکی جیاواز (بۆ نموونە 200 بە ژمارەی جیاواز وەک: 200-A, 200-B, هتد، یان بڕی خاڵ)
+                let ticketVal = 200 + (Math.floor(Math.random() * 5) * 50); // نموونە: 200، 250، 300، 350
+                // بۆ ئەوەی هەر 4 بلیتەکە جیاواز بن
+                let ticketString = "بلیت " + (generatedTickets.length + 1) + " (" + ticketVal + ")";
+                if(!generatedTickets.includes(ticketString)) {
+                    generatedTickets.push(ticketString);
+                }
+            }
+
+            generatedTickets.forEach(t => {
+                let span = document.createElement("span");
+                span.className = "ticket-badge";
+                span.innerText = t;
+                ticketsContainer.appendChild(span);
+            });
         }
 
         function addPlayer() {
@@ -172,7 +233,7 @@
                 return;
             }
 
-            players.push({ name: name, score: 0, tickets: 0 });
+            players.push({ name: name, score: 0, ticketsCount: 0 });
             nameInput.value = "";
             saveData();
             renderTable();
@@ -181,32 +242,9 @@
         function addScore(index) {
             const points = prompt("چەند خاڵ زیاد دەکەیت بۆ " + players[index].name + "؟");
             if (points !== null && !isNaN(points) && points !== "") {
-                let added = parseInt(points);
-                players[index].score += added;
-
-                // پشکنینی بلیت (هەر جارێک 200 تەواو بکات یان بڕەکە بگاتە سەرووی 200)
-                // لێرەدا دەتوانین بپشکنین ئایا بلیت دەگرێت یان بەپێی سیستمی داواکراو
-                let currentTickets = Math.floor(players[index].score / 200);
-                if (currentTickets > players[index].tickets) {
-                    let diff = currentTickets - players[index].tickets;
-                    players[index].tickets = currentTickets;
-                    alert("🎉 پیرۆزە! " + players[index].name + " " + diff + " بلیتـی گرت! (کۆی بلیت: " + currentTickets + ")");
-                }
-
-                saveData();
-                renderTable();
-            }
-        }
-
-        function subtractScore(index) {
-            const points = prompt("چەند خاڵ کەم دەکەیتەوە لە " + players[index].name + "؟");
-            if (points !== null && !isNaN(points) && points !== "") {
-                players[index].score -= parseInt(points);
-                if (players[index].score < 0) players[index].score = 0;
-                
-                // نوێکردنەوەی بلیتەکان ئەگەر خاڵەکان دابەزن
-                players[index].tickets = Math.floor(players[index].score / 200);
-
+                players[index].score += parseInt(points);
+                // ئەگەر بگاتە 200 یان زیاتر بلیتێک دەگرێت
+                players[index].ticketsCount = Math.floor(players[index].score / 200);
                 saveData();
                 renderTable();
             }
@@ -221,11 +259,8 @@
         }
 
         function resetScores() {
-            if (confirm("دڵنیایت هەموو خاڵ و بلیتەکان سفر دەکەیتەوە؟")) {
-                players.forEach(p => {
-                    p.score = 0;
-                    p.tickets = 0;
-                });
+            if (confirm("دڵنیایت هەموو خاڵەکان سفر دەکەیتەوە؟")) {
+                players.forEach(p => { p.score = 0; p.ticketsCount = 0; });
                 saveData();
                 renderTable();
             }
@@ -244,7 +279,7 @@
             tbody.innerHTML = "";
 
             if (players.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color: #94a3b8;">هیچ یاریزانێک نییە. تکایە ناوێک زیاد بکە.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="color: #94a3b8;">هیچ یاریزانێک تۆمار نەکراوە.</td></tr>`;
                 return;
             }
 
@@ -253,10 +288,9 @@
                 tr.innerHTML = `
                     <td style="font-weight: bold; color: #f8fafc;">${player.name}</td>
                     <td style="color: #38bdf8; font-weight: bold;">${player.score}</td>
-                    <td><span class="badge">${player.tickets} بلیت</span></td>
+                    <td><span style="background: #10b981; padding: 3px 8px; border-radius: 6px; font-size: 12px;">${player.ticketsCount} بلیت</span></td>
                     <td class="actions-cell">
                         <button onclick="addScore(${index})">+ خاڵ</button>
-                        <button class="btn-danger" onclick="subtractScore(${index})">- خاڵ</button>
                         <button class="btn-danger" onclick="deletePlayer(${index})">سڕینەوە</button>
                     </td>
                 `;
