@@ -1,2 +1,0 @@
-# hamadev
-hi
