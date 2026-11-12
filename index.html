@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hama Dev - پرسیار و وەڵام و QR</title>
+    <title>Hama Dev - سیستمی ئەکاونت و یاری</title>
     <!-- کتێبخانەی QR Code کە پشتگیری کوردی دەکات -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
@@ -55,7 +55,7 @@
             display: flex;
             gap: 10px;
         }
-        textarea {
+        input, textarea {
             width: 100%;
             padding: 12px 15px;
             border-radius: 8px;
@@ -65,7 +65,7 @@
             font-size: 14px;
             resize: vertical;
         }
-        textarea:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: #38bdf8;
         }
@@ -82,6 +82,13 @@
         }
         button:hover {
             background: #0ea5e9;
+        }
+        .btn-danger {
+            background: #f43f5e;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #e11d48;
         }
         .btn-success {
             background: #10b981;
@@ -162,14 +169,28 @@
 </head>
 <body>
 
-    <h1>Hama Dev - پرسیار و وەڵام و QR</h1>
-    <div class="subtitle">یاریی زانیاری گشتی و دروستکەری QR Code</div>
+    <h1>Hama Dev - پلاتفۆرمی یاری و ئەکاونت</h1>
+    <div class="subtitle">سیستمی چوونەژوورەوە و یاریی پرسیار و وەڵام</div>
 
-    <!-- بەشی دروستکردنی QR Code -->
-    <div class="card">
-        <h3>دروستکەری QR Code بۆ خەڵات</h3>
+    <!-- 1. بەشی دروستکردنی ئەکاونت و چوونەژوورەوە -->
+    <div class="card" id="authCard">
+        <h3 id="authTitle">دروستکردنی ئەکاونت (Register)</h3>
         <div class="input-group" style="margin-top: 15px;">
-            <textarea id="qrText" rows="4" placeholder="دەق یان لینک لێرە بنووسە..."></textarea>
+            <input type="text" id="usernameInput" placeholder="ناوی بەکارهێنەر (Username)..." />
+            <input type="password" id="passwordInput" placeholder="پاسوۆرد (Password)..." />
+            <div class="row-group">
+                <button class="btn-success" style="flex: 1;" onclick="registerUser()">دروستکردن</button>
+                <button class="btn-warning" style="flex: 1;" onclick="loginUser()">چوونەژوورەوە</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. بەشی تایبەتی صاحب (Hama Dev) بۆ دروستکردنی QR Code -->
+    <div class="card" id="adminQrCard" style="display: none; border: 2px solid #38bdf8;">
+        <h3 style="color: #38bdf8;">بەڕێوەبەر (Hama Dev) - دروستکەری QR Code</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">ئەم بەشە تەنها بۆ تۆ دەردەکەوێت وەک صاحب!</p>
+        <div class="input-group">
+            <textarea id="qrText" rows="3" placeholder="دەق یان لینک لێرە بنووسە..."></textarea>
             <div class="row-group">
                 <button class="btn-success" style="flex: 1;" onclick="generateQR()">دروستکردنی QR</button>
                 <button class="btn-warning" style="flex: 1;" onclick="fillRobuxTemplate()">قالبی 200 ڕۆبۆکس</button>
@@ -182,8 +203,13 @@
         </div>
     </div>
 
-    <!-- یاریی پرسیار و وەڵام (Quiz Game) -->
-    <div class="card">
+    <!-- 3. بەشی یاریی پرسیار و وەڵام (بۆ هەموو یاریزانەکان) -->
+    <div class="card" id="gameCard" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 id="welcomeUser" style="color: #38bdf8; font-size: 16px;">خێر هاتیت</h3>
+            <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="logoutUser()">چوونە دەرەوە</button>
+        </div>
+        
         <h3>یاریی پرسیار و وەڵام</h3>
         
         <div class="quiz-box" id="quizContainer">
@@ -203,14 +229,86 @@
     </div>
 
     <script>
-        // پڕکردنەوەی قالبی تایبەت بە خەڵاتی 200 ڕۆبۆکس
+        // پشکنینی دۆخی چوونەژوورەوە لە کاتی کردنەوەی سایت
+        window.onload = function() {
+            let currentUser = localStorage.getItem("hama_current_user");
+            if (currentUser) {
+                showApp(currentUser);
+            }
+        };
+
+        // تۆمارکردنی ئەکاونتی نوێ
+        function registerUser() {
+            let user = document.getElementById("usernameInput").value.trim();
+            let pass = document.getElementById("passwordInput").value.trim();
+
+            if (!user || !pass) {
+                alert("تکایە ناو و پاسوۆرد بنووسە!");
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("hama_users") || "{}");
+            if (users[user]) {
+                alert("ئەم ناوە پێشتر تۆمار کراوە، تکایە بچۆ ژوورەوە!");
+                return;
+            }
+
+            users[user] = pass;
+            localStorage.setItem("hama_users", JSON.stringify(users));
+            alert("ئەکاونتەکەت بە سەرکەوتوویی دروست کرا! ئێستا دەتوانیت بچیتە ژوورەوە.");
+        }
+
+        // چوونەژوورەوە بۆ ئەکاونت
+        function loginUser() {
+            let user = document.getElementById("usernameInput").value.trim();
+            let pass = document.getElementById("passwordInput").value.trim();
+
+            let users = JSON.parse(localStorage.getItem("hama_users") || "{}");
+            
+            // مەرجی تایبەت بۆ صاحب (hama dev)
+            if (user.toLowerCase() === "hama dev" && pass === "1234") { // دەتوانیت پاسوۆردی خۆت لێرە بگۆڕیت ئەگەر وێشت
+                setLoginSession(user);
+                return;
+            }
+
+            if (users[user] && users[user] === pass) {
+                setLoginSession(user);
+            } else {
+                alert("ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە!");
+            }
+        }
+
+        function setLoginSession(user) {
+            localStorage.setItem("hama_current_user", user);
+            showApp(user);
+        }
+
+        function showApp(user) {
+            document.getElementById("authCard").style.display = "none";
+            document.getElementById("gameCard").style.display = "block";
+            document.getElementById("welcomeUser").innerText = "خێرهاتیت، " + user;
+
+            // پشکنین ئایا ناوەکە hama devـە بۆ ئەوەی بەشی QRـی بۆ دەربکەین
+            if (user.toLowerCase() === "hama dev") {
+                document.getElementById("adminQrCard").style.display = "block";
+                fillRobuxTemplate();
+            }
+
+            startQuiz();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem("hama_current_user");
+            location.reload();
+        }
+
+        // بەشی QR Code (تەنها بۆ صاحب)
         function fillRobuxTemplate() {
             const template = `پیرۆزە چات بکە بوویتە خاوەن 200 ڕۆبۆکس لە یاری hama dev\nلینکی یاری:\nhttps://hamadev19.github.io/-hama-dev-/\nچاتت لە بیر نەچێت\nناوی تیکتۆک: .hama_dev`;
             document.getElementById("qrText").value = template;
             generateQR();
         }
 
-        // دروستکردنی QR Code بە پشتگیری تەواوی UTF-8
         function generateQR() {
             const text = document.getElementById("qrText").value.trim();
             const qrContainer = document.getElementById("qrcode");
@@ -230,7 +328,6 @@
             wrapper.style.display = "flex";
         }
 
-        // داگرتنی وێنەی QR Code
         function downloadQR() {
             const img = document.querySelector("#qrcode img");
             if (!img) return;
@@ -242,7 +339,7 @@
             document.body.removeChild(link);
         }
 
-        // سیستمی یاریی پرسیار و وەڵام
+        // بەشی یاریی پرسیار و وەڵام
         const quizData = [
             {
                 question: "پایتەختی هەرێمی کوردستان کام شارە؟",
@@ -251,7 +348,6 @@
             },
             {
                 question: "کام یاریزانە زۆرترین تۆپی دێڕی (Ballon d'Or) بەدەستهێناوە؟",
-                questionEn: "",
                 options: ["کریستیانو رۆناڵدۆ", "لیۆنێل مێسی", "نەیمار", "پێلی"],
                 correct: 1
             },
@@ -320,12 +416,6 @@
             `;
             document.getElementById("restartQuizBtn").style.display = "inline-block";
         }
-
-        // دانانی قالبی QR لە کاتی کردنەوەی پەڕەکەدا
-        window.onload = function() {
-            fillRobuxTemplate();
-            startQuiz();
-        };
     </script>
 </body>
 </html>
