@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بنکۆی کۆنکان و دروستکەری QR - Hama Dev</title>
-    <!-- بارکردنی کتێبخانەی QR Code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- کتێبخانەی QR Code کە پشتگیری تەواوی یونیکۆد و کوردی دەکات -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -32,6 +32,7 @@
             font-size: 13px;
             color: #94a3b8;
             margin-bottom: 20px;
+            text-align: center;
         }
         .card {
             background: rgba(255, 255, 255, 0.05);
@@ -46,19 +47,25 @@
         }
         .input-group {
             display: flex;
+            flex-direction: column;
             gap: 10px;
             margin-bottom: 15px;
         }
-        input {
-            flex: 1;
-            padding: 10px 15px;
+        .row-group {
+            display: flex;
+            gap: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
             border-radius: 8px;
             border: 1px solid #334155;
             background: #090d16;
             color: #fff;
-            font-size: 15px;
+            font-size: 14px;
+            resize: vertical;
         }
-        input:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: #38bdf8;
         }
@@ -71,6 +78,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 14px;
         }
         button:hover {
             background: #0ea5e9;
@@ -89,17 +97,30 @@
         .btn-success:hover {
             background: #059669;
         }
+        .btn-warning {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
         /* بەشی QR Code */
-        #qrcode {
-            display: flex;
-            justify-content: center;
+        #qrcode-wrapper {
+            display: none;
+            flex-direction: column;
+            align-items: center;
             margin-top: 15px;
+        }
+        #qrcode {
             background: #fff;
             padding: 15px;
             border-radius: 12px;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #qrcode img {
+            display: block;
+            max-width: 220px;
+            height: auto;
         }
         /* بەشی ژمارە و بلیتەکان */
         .number-box {
@@ -155,17 +176,24 @@
 </head>
 <body>
 
-    <h1>بنکۆی کۆنکان و دروستکەری QR</h1>
-    <div class="subtitle">بەستەری سایتەکەت یان هەر تێکستێک بگۆڕە بۆ QR Code</div>
+    <h1>Hama Dev - بنکۆی کۆنکان و QR</h1>
+    <div class="subtitle">دروستکردنی QR Code بۆ هەموو جۆرە نوسین و لینکێک</div>
 
     <!-- بەشی دروستکردنی QR Code -->
     <div class="card">
-        <h3>دروستکردنی QR Code ڕاستەوخۆ</h3>
+        <h3>دروستکەری QR Code (پشتگیری کوردی و لینک دەکات)</h3>
         <div class="input-group" style="margin-top: 15px;">
-            <input type="text" id="qrText" placeholder="بەستەری سایت یان تێکست بنووسە..." />
-            <button class="btn-success" onclick="generateQR()">درۆستکردن</button>
+            <textarea id="qrText" rows="4" placeholder="هەر نوسینێک، لینکێک، یان پیرۆزباییەک لێرە بنووسە..."></textarea>
+            <div class="row-group">
+                <button class="btn-success" style="flex: 1;" onclick="generateQR()">دروستکردنی QR</button>
+                <button class="btn-warning" style="flex: 1;" onclick="fillRobuxTemplate()">قالبـی 200 ڕۆبۆکس</button>
+            </div>
         </div>
-        <div id="qrcode"></div>
+        
+        <div id="qrcode-wrapper">
+            <div id="qrcode"></div>
+            <button class="btn-success" style="margin-top: 12px;" onclick="downloadQR()">داگرتنی وێنەی QR</button>
+        </div>
     </div>
 
     <!-- بەشی تیروپشکی ژمارە و بلیتەکان -->
@@ -182,14 +210,14 @@
 
     <!-- بەشی زیادکردنی یاریزان -->
     <div class="card">
-        <div class="input-group">
+        <div class="row-group">
             <input type="text" id="playerName" placeholder="ناوی یاریزان بنووسە..." />
-            <button onclick="addPlayer()">زیادکردنی یاریزان</button>
+            <button onclick="addPlayer()">زیادکردن</button>
         </div>
     </div>
 
     <!-- تابلۆی خاڵەکان -->
-    <div class="card" style="max-width: 100%;">
+    <div class="card" style="max-width: 600px;">
         <table>
             <thead>
                 <tr>
@@ -211,26 +239,47 @@
     </div>
 
     <script>
-        // بەشی دروستکردنی QR Code
-        let qrInstance = null;
+        // پڕکردنەوەی قالبی تایبەت بە خەڵاتی 200 ڕۆبۆکس
+        function fillRobuxTemplate() {
+            const template = `پیرۆزە چات بکە بوویتە خاوەن 200 ڕۆبۆکس لە یاری hama dev\nلینکی یاری:\nhttps://hamadev19.github.io/-hama-dev-/\nچاتت لە بیر نەچێت\nناوی تیکتۆک: .hama_dev`;
+            document.getElementById("qrText").value = template;
+            generateQR();
+        }
+
+        // دروستکردنی QR Code بە پشتگیری تەواوی UTF-8 (بۆ پیتی کوردی)
         function generateQR() {
             const text = document.getElementById("qrText").value.trim();
             const qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = "";
+            const wrapper = document.getElementById("qrcode-wrapper");
 
             if (!text) {
-                alert("تکایە بەستەر یان تێکستێک بنووسە!");
+                alert("تکایە نوسینێک یان لینکێک بنووسە!");
                 return;
             }
 
-            qrInstance = new QRCode(qrContainer, {
-                text: text,
-                width: 160,
-                height: 160,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctErrorLevel: QRCode.CorrectLevel.H
-            });
+            // گۆڕینی دەقەکە بۆ UTF-8 بۆ ئەوەی پیتە کوردییەکان تێکنەچن لە کاتی سکانکردن
+            const utf8Text = unescape(encodeURIComponent(text));
+
+            // 0 واتە قەبارەی QR بە شێوەی خۆکار بە پێی درێژی نوسینەکە ڕێکدەخرێت
+            const qr = qrcode(0, 'M');
+            qr.addData(utf8Text, 'Byte');
+            qr.make();
+
+            // دروستکردنی وێنەی QR بە کوالێتی بەرز
+            qrContainer.innerHTML = qr.createImgTag(6, 4);
+            wrapper.style.display = "flex";
+        }
+
+        // داگرتنی وێنەی QR Code وەک فایل
+        function downloadQR() {
+            const img = document.querySelector("#qrcode img");
+            if (!img) return;
+            const link = document.createElement("a");
+            link.href = img.src;
+            link.download = "hama_dev_qr.gif";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // بەشی یاری و تیروپشکی بلیتەکان
@@ -337,7 +386,11 @@
             });
         }
 
-        renderTable();
+        // دروستکردنی QRـی خەڵاتەکە بە شێوەی خۆکار لە کاتی کردنەوەی پەڕەکەدا
+        window.onload = function() {
+            renderTable();
+            fillRobuxTemplate();
+        };
     </script>
 </body>
 </html>
