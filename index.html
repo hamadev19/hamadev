@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hama Dev - یاری و دروستکەری QR</title>
-    <!-- کتێبخانەی QR Code کە پشتگیری یونیکۆد و کوردی دەکات -->
+    <title>Hama Dev - پرسیار و وەڵام و QR</title>
+    <!-- کتێبخانەی QR Code کە پشتگیری کوردی دەکات -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * {
@@ -115,22 +115,46 @@
             max-width: 200px;
             height: auto;
         }
-        /* یارییە نوێیەکە (یاریی تاقیکردنەوەی خێرایی) */
-        .game-box {
+        /* بەشی یاریی پرسیار و وەڵام */
+        .quiz-box {
             background: #090d16;
-            border: 2px dashed #38bdf8;
+            border: 2px solid #334155;
             border-radius: 12px;
-            padding: 25px;
-            margin-top: 15px;
+            padding: 20px;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .question-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .option-btn {
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #475569;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            user-select: none;
-            transition: background 0.3s;
+            font-size: 14px;
+            text-align: center;
+            transition: background 0.2s;
         }
-        .game-box h3 {
-            font-size: 20px;
-            margin-bottom: 8px;
+        .option-btn:hover {
+            background: #334155;
+            border-color: #38bdf8;
         }
-        .game-box p {
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
             font-size: 14px;
             color: #94a3b8;
         }
@@ -138,8 +162,8 @@
 </head>
 <body>
 
-    <h1>Hama Dev - یاری و دروستکەری QR</h1>
-    <div class="subtitle">یارییەکی خێرا و سیستمی دروستکردنی QR Code</div>
+    <h1>Hama Dev - پرسیار و وەڵام و QR</h1>
+    <div class="subtitle">یاریی زانیاری گشتی و دروستکەری QR Code</div>
 
     <!-- بەشی دروستکردنی QR Code -->
     <div class="card">
@@ -158,19 +182,24 @@
         </div>
     </div>
 
-    <!-- یارییە نوێیەکە: تاقیکردنەوەی خێرایی پەنجە (Reaction Game) -->
+    <!-- یاریی پرسیار و وەڵام (Quiz Game) -->
     <div class="card">
-        <h3>یاریی خێرایی پەنجە (Reaction Test)</h3>
-        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 10px;">ببینە کاتێک ڕەنگەکە دەگۆڕێت، چەندە خێرا کلیک دەکەیت!</p>
+        <h3>یاریی پرسیار و وەڵام</h3>
         
-        <div class="game-box" id="reactionBox" onclick="handleGameClick()">
-            <h3 id="gameTitle">بۆ دەستپێکردن کلیک لێرە بکە</h3>
-            <p id="gameDesc">ئامادەبە کاتێک ڕەنگەکە سەوز بوو!</p>
+        <div class="quiz-box" id="quizContainer">
+            <div class="quiz-stats">
+                <span>پرسیار: <span id="currentQuestionNum">1</span> / <span id="totalQuestions">4</span></span>
+                <span>خاڵ: <span id="quizScore" style="color: #38bdf8; font-weight: bold;">0</span></span>
+            </div>
+            
+            <div class="question-text" id="questionText">پرسیار لێرە دەردەکەوێت...</div>
+            
+            <div class="options-grid" id="optionsContainer">
+                <!-- هەڵبژاردنەکان لێرە دەردەکەون -->
+            </div>
         </div>
         
-        <div style="margin-top: 15px; font-size: 15px; font-weight: bold;">
-            کاتی تۆمارکراو: <span id="resultTime" style="color: #38bdf8;">0</span> مێلی چرکە
-        </div>
+        <button class="btn-success" id="restartQuizBtn" style="margin-top: 15px; display: none;" onclick="startQuiz()">دووبارە دەستپێکردنەوەی یاری</button>
     </div>
 
     <script>
@@ -213,55 +242,89 @@
             document.body.removeChild(link);
         }
 
-        // مۆدڵی یارییە نوێیەکە (خێرایی پەنجە)
-        let gameState = "waiting"; // waiting, ready, click
-        let startTime, timeoutId;
-
-        const reactionBox = document.getElementById("reactionBox");
-        const gameTitle = document.getElementById("gameTitle");
-        const gameDesc = document.getElementById("gameDesc");
-        const resultTime = document.getElementById("resultTime");
-
-        function handleGameClick() {
-            if (gameState === "waiting") {
-                gameState = "ready";
-                reactionBox.style.background = "#b91c1c"; // سوور
-                gameTitle.innerText = "چاوەڕێ بە... سەوز دەبێت!";
-                gameDesc.innerText = "هێشتا مەکلیکە تا سەوز دەبێت";
-
-                let randomTime = Math.floor(Math.random() * 2000) + 1500; // نێوان 1.5 بۆ 3.5 چرکە
-                timeoutId = setTimeout(() => {
-                    gameState = "click";
-                    reactionBox.style.background = "#047857"; // سەوز
-                    gameTitle.innerText = "ئێستا کلیک بکە! خێرا!";
-                    gameDesc.innerText = "کلیک لەسەر ئەم قەفەسە بکە";
-                    startTime = new Date().getTime();
-                }, randomTime);
-
-            } else if (gameState === "ready") {
-                // ئەگەر زوو کلیکی کرد پێش سەوز بوون
-                clearTimeout(timeoutId);
-                gameState = "waiting";
-                reactionBox.style.background = "#090d16";
-                gameTitle.innerText = "هەڵە کردت! زوو کلیکت کرد";
-                gameDesc.innerText = "بۆ دووبارە دەستپێکردنەوە کلیک لێرە بکە";
-
-            } else if (gameState === "click") {
-                // کاتی دروست
-                let endTime = new Date().getTime();
-                let elapsedTime = endTime - startTime;
-                resultTime.innerText = elapsedTime;
-
-                gameState = "waiting";
-                reactionBox.style.background = "#090d16";
-                gameTitle.innerText = "پیرۆزە! کاتەکەت: " + elapsedTime + " ms";
-                gameDesc.innerText = "بۆ جارێکی تر کلیک لێرە بکە";
+        // سیستمی یاریی پرسیار و وەڵام
+        const quizData = [
+            {
+                question: "پایتەختی هەرێمی کوردستان کام شارە؟",
+                options: ["سلێمانی", "هەولێر", "دهۆک", "کەرکووک"],
+                correct: 1
+            },
+            {
+                question: "کام یاریزانە زۆرترین تۆپی دێڕی (Ballon d'Or) بەدەستهێناوە؟",
+                questionEn: "",
+                options: ["کریستیانو رۆناڵدۆ", "لیۆنێل مێسی", "نەیمار", "پێلی"],
+                correct: 1
+            },
+            {
+                question: "ڕۆبۆکس (Robux) دراوی سەرەکی چ یارییەکە؟",
+                options: ["ماینکرافت", "ڕۆبلوکس (Roblox)", "گارینا فری فایەر", "پەبجی"],
+                correct: 1
+            },
+            {
+                question: "کۆمپیوتەر زانیارییەکان بە چ شێوازێک دەخوێنێتەوە؟",
+                options: ["سیستمی سفر و یەک (Binary)", "پیت و ڕستە", "ژمارەی دەهەیی", "هێڵکاری"],
+                correct: 0
             }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+
+        function startQuiz() {
+            currentQIndex = 0;
+            score = 0;
+            document.getElementById("restartQuizBtn").style.display = "none";
+            document.getElementById("quizContainer").style.display = "block";
+            document.getElementById("totalQuestions").innerText = quizData.length;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQIndex >= quizData.length) {
+                endQuiz();
+                return;
+            }
+
+            const q = quizData[currentQIndex];
+            document.getElementById("currentQuestionNum").innerText = currentQIndex + 1;
+            document.getElementById("quizScore").innerText = score;
+            document.getElementById("questionText").innerText = q.question;
+
+            const optionsContainer = document.getElementById("optionsContainer");
+            optionsContainer.innerHTML = "";
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, q.correct);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            if (selected === correct) {
+                score += 10;
+                alert("پیرۆزە! وەڵامەکەت ڕاستە.");
+            } else {
+                alert("وەڵامەکە هەڵە بوو!");
+            }
+            currentQIndex++;
+            loadQuestion();
+        }
+
+        function endQuiz() {
+            document.getElementById("quizContainer").innerHTML = `
+                <div class="question-text" style="color: #38bdf8;">یارییەکە کۆتایی هات! 🎉</div>
+                <p style="font-size: 16px; margin-bottom: 15px;">کۆی خاڵەکانت: ${score} لە ${(quizData.length * 10)}</p>
+            `;
+            document.getElementById("restartQuizBtn").style.display = "inline-block";
         }
 
         // دانانی قالبی QR لە کاتی کردنەوەی پەڕەکەدا
         window.onload = function() {
             fillRobuxTemplate();
+            startQuiz();
         };
     </script>
 </body>
