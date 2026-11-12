@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hama Dev - پلاتفۆرمی یاری و بەڕێوەبەر</title>
-    <!-- کتێبخانەی QR Code -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <!-- کتێبخانەی فەرمی و نوێی QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -228,7 +228,7 @@
             <h4 style="margin-bottom: 10px; font-size: 14px;">زیادکردن و سڕینەوەی پرسیار</h4>
             <div class="input-group">
                 <input type="text" id="newQuestionText" placeholder="دەقی پرسیارەکە..." />
-                <input type="text" id="opt0" placeholder="هەڵبژاردەی ١ (هەڵە)" />
+                <input type="text" id="opt0" placeholder="هەڵبژاردەی ١ (وەڵامی ڕاست/هەڵە)" />
                 <input type="text" id="opt1" placeholder="هەڵبژاردەی ٢" />
                 <input type="text" id="opt2" placeholder="هەڵبژاردەی ٣" />
                 <input type="text" id="opt3" placeholder="هەڵبژاردەی چوارەم" />
@@ -398,9 +398,11 @@
             const qrContainer = document.getElementById("qrcode");
             const wrapper = document.getElementById("qrcode-wrapper");
             if (!text) { showToast("تکایە نوسینێک بنووسە!"); return; }
+            
+            qrContainer.innerHTML = "";
             const utf8Text = unescape(encodeURIComponent(text));
             const qr = qrcode(0, 'M');
-            qr.addData(utf8Text, 'Byte');
+            qr.addData(utf8Text);
             qr.make();
             qrContainer.innerHTML = qr.createImgTag(6, 4);
             wrapper.style.display = "flex";
@@ -510,4 +512,24 @@
             let tbody = document.getElementById("leaderboardBody");
             tbody.innerHTML = "";
 
-            if (sortedUsers.length ===
+            if (sortedUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color: #94a3b8;">هێشتا هیچ خاڵێک تۆمار نەکراوە.</td></tr>`;
+                return;
+            }
+
+            sortedUsers.forEach((user, index) => {
+                let usrScore = leaderboard[user];
+                let rankLevel = usrScore >= 50 ? "⭐ پرۆفیشناڵ" : (usrScore >= 20 ? "🔥 شارەزا" : "🌱 دەستپێک");
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: #f59e0b;">#${index + 1}</td>
+                    <td style="color: #f8fafc; font-weight: bold;">${user}</td>
+                    <td style="color: #10b981;">${rankLevel}</td>
+                    <td style="color: #38bdf8; font-weight: bold;">${usrScore} خاڵ</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
