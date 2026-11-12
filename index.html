@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بنکۆی کۆنکان و دروستکەری QR - Hama Dev</title>
-    <!-- کتێبخانەی QR Code کە پشتگیری تەواوی یونیکۆد و کوردی دەکات -->
+    <title>Hama Dev - یاری و دروستکەری QR</title>
+    <!-- کتێبخانەی QR Code کە پشتگیری یونیکۆد و کوردی دەکات -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
         * {
@@ -55,7 +55,7 @@
             display: flex;
             gap: 10px;
         }
-        input, textarea {
+        textarea {
             width: 100%;
             padding: 12px 15px;
             border-radius: 8px;
@@ -65,7 +65,7 @@
             font-size: 14px;
             resize: vertical;
         }
-        input:focus, textarea:focus {
+        textarea:focus {
             outline: none;
             border-color: #38bdf8;
         }
@@ -82,13 +82,6 @@
         }
         button:hover {
             background: #0ea5e9;
-        }
-        .btn-danger {
-            background: #f43f5e;
-            color: #fff;
-        }
-        .btn-danger:hover {
-            background: #e11d48;
         }
         .btn-success {
             background: #10b981;
@@ -119,74 +112,43 @@
         }
         #qrcode img {
             display: block;
-            max-width: 220px;
+            max-width: 200px;
             height: auto;
         }
-        /* بەشی ژمارە و بلیتەکان */
-        .number-box {
-            font-size: 35px;
-            font-weight: bold;
-            color: #f59e0b;
+        /* یارییە نوێیەکە (یاریی تاقیکردنەوەی خێرایی) */
+        .game-box {
             background: #090d16;
-            border: 2px dashed #f59e0b;
+            border: 2px dashed #38bdf8;
             border-radius: 12px;
-            padding: 12px;
-            margin: 15px 0;
+            padding: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
         }
-        .tickets-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
+        .game-box h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
         }
-        .ticket-badge {
-            background: #3b82f6;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid #334155;
+        .game-box p {
             font-size: 14px;
-        }
-        th {
-            color: #38bdf8;
-        }
-        .actions-cell {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .actions-cell button {
-            padding: 5px 8px;
-            font-size: 12px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
 
-    <h1>Hama Dev - بنکۆی کۆنکان و QR</h1>
-    <div class="subtitle">دروستکردنی QR Code بۆ هەموو جۆرە نوسین و لینکێک</div>
+    <h1>Hama Dev - یاری و دروستکەری QR</h1>
+    <div class="subtitle">یارییەکی خێرا و سیستمی دروستکردنی QR Code</div>
 
     <!-- بەشی دروستکردنی QR Code -->
     <div class="card">
-        <h3>دروستکەری QR Code (پشتگیری کوردی و لینک دەکات)</h3>
+        <h3>دروستکەری QR Code بۆ خەڵات</h3>
         <div class="input-group" style="margin-top: 15px;">
-            <textarea id="qrText" rows="4" placeholder="هەر نوسینێک، لینکێک، یان پیرۆزباییەک لێرە بنووسە..."></textarea>
+            <textarea id="qrText" rows="4" placeholder="دەق یان لینک لێرە بنووسە..."></textarea>
             <div class="row-group">
                 <button class="btn-success" style="flex: 1;" onclick="generateQR()">دروستکردنی QR</button>
-                <button class="btn-warning" style="flex: 1;" onclick="fillRobuxTemplate()">قالبـی 200 ڕۆبۆکس</button>
+                <button class="btn-warning" style="flex: 1;" onclick="fillRobuxTemplate()">قالبی 200 ڕۆبۆکس</button>
             </div>
         </div>
         
@@ -196,45 +158,18 @@
         </div>
     </div>
 
-    <!-- بەشی تیروپشکی ژمارە و بلیتەکان -->
+    <!-- یارییە نوێیەکە: تاقیکردنەوەی خێرایی پەنجە (Reaction Game) -->
     <div class="card">
-        <h3>تیروپشکی ژمارە و ٤ بلیتی جیاواز</h3>
-        <div class="number-box" id="displayNumber">---</div>
-        <button class="btn-success" onclick="generateRoundTickets()">پێدانی ژمارە و بلیتەکان</button>
+        <h3>یاریی خێرایی پەنجە (Reaction Test)</h3>
+        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 10px;">ببینە کاتێک ڕەنگەکە دەگۆڕێت، چەندە خێرا کلیک دەکەیت!</p>
         
-        <div style="margin-top: 12px; font-weight: bold; color: #cbd5e1; font-size: 13px;">بلیتەکانی ئەم خولە:</div>
-        <div class="tickets-container" id="roundTicketsContainer">
-            <span style="color: #94a3b8; font-size: 13px;">هێشتا بلیت دروست نەکراوە...</span>
+        <div class="game-box" id="reactionBox" onclick="handleGameClick()">
+            <h3 id="gameTitle">بۆ دەستپێکردن کلیک لێرە بکە</h3>
+            <p id="gameDesc">ئامادەبە کاتێک ڕەنگەکە سەوز بوو!</p>
         </div>
-    </div>
-
-    <!-- بەشی زیادکردنی یاریزان -->
-    <div class="card">
-        <div class="row-group">
-            <input type="text" id="playerName" placeholder="ناوی یاریزان بنووسە..." />
-            <button onclick="addPlayer()">زیادکردن</button>
-        </div>
-    </div>
-
-    <!-- تابلۆی خاڵەکان -->
-    <div class="card" style="max-width: 600px;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ناو</th>
-                    <th>کۆی خاڵ</th>
-                    <th>بلیتەکان</th>
-                    <th>کردارەکان</th>
-                </tr>
-            </thead>
-            <tbody id="scoreTableBody">
-                <!-- یاریزانەکان لێرە دەردەکەون -->
-            </tbody>
-        </table>
-
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn-danger" onclick="resetScores()" style="flex:1;">سفرکردنەوەی خاڵەکان</button>
-            <button onclick="clearAll()" style="flex:1;">سڕینەوەی هەموویان</button>
+        
+        <div style="margin-top: 15px; font-size: 15px; font-weight: bold;">
+            کاتی تۆمارکراو: <span id="resultTime" style="color: #38bdf8;">0</span> مێلی چرکە
         </div>
     </div>
 
@@ -246,7 +181,7 @@
             generateQR();
         }
 
-        // دروستکردنی QR Code بە پشتگیری تەواوی UTF-8 (بۆ پیتی کوردی)
+        // دروستکردنی QR Code بە پشتگیری تەواوی UTF-8
         function generateQR() {
             const text = document.getElementById("qrText").value.trim();
             const qrContainer = document.getElementById("qrcode");
@@ -257,20 +192,16 @@
                 return;
             }
 
-            // گۆڕینی دەقەکە بۆ UTF-8 بۆ ئەوەی پیتە کوردییەکان تێکنەچن لە کاتی سکانکردن
             const utf8Text = unescape(encodeURIComponent(text));
-
-            // 0 واتە قەبارەی QR بە شێوەی خۆکار بە پێی درێژی نوسینەکە ڕێکدەخرێت
             const qr = qrcode(0, 'M');
             qr.addData(utf8Text, 'Byte');
             qr.make();
 
-            // دروستکردنی وێنەی QR بە کوالێتی بەرز
             qrContainer.innerHTML = qr.createImgTag(6, 4);
             wrapper.style.display = "flex";
         }
 
-        // داگرتنی وێنەی QR Code وەک فایل
+        // داگرتنی وێنەی QR Code
         function downloadQR() {
             const img = document.querySelector("#qrcode img");
             if (!img) return;
@@ -282,113 +213,54 @@
             document.body.removeChild(link);
         }
 
-        // بەشی یاری و تیروپشکی بلیتەکان
-        let players = JSON.parse(localStorage.getItem("konkan_v4_players")) || [];
+        // مۆدڵی یارییە نوێیەکە (خێرایی پەنجە)
+        let gameState = "waiting"; // waiting, ready, click
+        let startTime, timeoutId;
 
-        function saveData() {
-            localStorage.setItem("konkan_v4_players", JSON.stringify(players));
-        }
+        const reactionBox = document.getElementById("reactionBox");
+        const gameTitle = document.getElementById("gameTitle");
+        const gameDesc = document.getElementById("gameDesc");
+        const resultTime = document.getElementById("resultTime");
 
-        function generateRoundTickets() {
-            const randomNum = Math.floor(Math.random() * 90) + 10;
-            document.getElementById("displayNumber").innerText = randomNum;
+        function handleGameClick() {
+            if (gameState === "waiting") {
+                gameState = "ready";
+                reactionBox.style.background = "#b91c1c"; // سوور
+                gameTitle.innerText = "چاوەڕێ بە... سەوز دەبێت!";
+                gameDesc.innerText = "هێشتا مەکلیکە تا سەوز دەبێت";
 
-            let ticketsContainer = document.getElementById("roundTicketsContainer");
-            ticketsContainer.innerHTML = "";
+                let randomTime = Math.floor(Math.random() * 2000) + 1500; // نێوان 1.5 بۆ 3.5 چرکە
+                timeoutId = setTimeout(() => {
+                    gameState = "click";
+                    reactionBox.style.background = "#047857"; // سەوز
+                    gameTitle.innerText = "ئێستا کلیک بکە! خێرا!";
+                    gameDesc.innerText = "کلیک لەسەر ئەم قەفەسە بکە";
+                    startTime = new Date().getTime();
+                }, randomTime);
 
-            let generatedTickets = [];
-            while(generatedTickets.length < 4) {
-                let ticketVal = 200 + (Math.floor(Math.random() * 5) * 50);
-                let ticketString = "بلیت " + (generatedTickets.length + 1) + " (" + ticketVal + ")";
-                if(!generatedTickets.includes(ticketString)) {
-                    generatedTickets.push(ticketString);
-                }
-            }
+            } else if (gameState === "ready") {
+                // ئەگەر زوو کلیکی کرد پێش سەوز بوون
+                clearTimeout(timeoutId);
+                gameState = "waiting";
+                reactionBox.style.background = "#090d16";
+                gameTitle.innerText = "هەڵە کردت! زوو کلیکت کرد";
+                gameDesc.innerText = "بۆ دووبارە دەستپێکردنەوە کلیک لێرە بکە";
 
-            generatedTickets.forEach(t => {
-                let span = document.createElement("span");
-                span.className = "ticket-badge";
-                span.innerText = t;
-                ticketsContainer.appendChild(span);
-            });
-        }
+            } else if (gameState === "click") {
+                // کاتی دروست
+                let endTime = new Date().getTime();
+                let elapsedTime = endTime - startTime;
+                resultTime.innerText = elapsedTime;
 
-        function addPlayer() {
-            const nameInput = document.getElementById("playerName");
-            const name = nameInput.value.trim();
-            
-            if (!name) {
-                alert("تکایە ناوی یاریزان بنووسە!");
-                return;
-            }
-
-            players.push({ name: name, score: 0, ticketsCount: 0 });
-            nameInput.value = "";
-            saveData();
-            renderTable();
-        }
-
-        function addScore(index) {
-            const points = prompt("چەند خاڵ زیاد دەکەیت بۆ " + players[index].name + "؟");
-            if (points !== null && !isNaN(points) && points !== "") {
-                players[index].score += parseInt(points);
-                players[index].ticketsCount = Math.floor(players[index].score / 200);
-                saveData();
-                renderTable();
+                gameState = "waiting";
+                reactionBox.style.background = "#090d16";
+                gameTitle.innerText = "پیرۆزە! کاتەکەت: " + elapsedTime + " ms";
+                gameDesc.innerText = "بۆ جارێکی تر کلیک لێرە بکە";
             }
         }
 
-        function deletePlayer(index) {
-            if (confirm("دڵنیایت لە سڕینەوەی ئەم یاریزانە؟")) {
-                players.splice(index, 1);
-                saveData();
-                renderTable();
-            }
-        }
-
-        function resetScores() {
-            if (confirm("دڵنیایت هەموو خاڵەکان سفر دەکەیتەوە؟")) {
-                players.forEach(p => { p.score = 0; p.ticketsCount = 0; });
-                saveData();
-                renderTable();
-            }
-        }
-
-        function clearAll() {
-            if (confirm("دڵنیایت لیستەکە بە تەواوی خاوێن دەکەیتەوە؟")) {
-                players = [];
-                saveData();
-                renderTable();
-            }
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById("scoreTableBody");
-            tbody.innerHTML = "";
-
-            if (players.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="color: #94a3b8;">هیچ یاریزانێک تۆمار نەکراوە.</td></tr>`;
-                return;
-            }
-
-            players.forEach((player, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="font-weight: bold; color: #f8fafc;">${player.name}</td>
-                    <td style="color: #38bdf8; font-weight: bold;">${player.score}</td>
-                    <td><span style="background: #10b981; padding: 3px 8px; border-radius: 6px; font-size: 12px;">${player.ticketsCount} بلیت</span></td>
-                    <td class="actions-cell">
-                        <button onclick="addScore(${index})">+ خاڵ</button>
-                        <button class="btn-danger" onclick="deletePlayer(${index})">سڕینەوە</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // دروستکردنی QRـی خەڵاتەکە بە شێوەی خۆکار لە کاتی کردنەوەی پەڕەکەدا
+        // دانانی قالبی QR لە کاتی کردنەوەی پەڕەکەدا
         window.onload = function() {
-            renderTable();
             fillRobuxTemplate();
         };
     </script>
