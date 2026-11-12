@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بنکۆی کۆنکان - بلیت و تیروپشک</title>
+    <title>بنکۆی کۆنکان و دروستکەری QR - Hama Dev</title>
+    <!-- بارکردنی کتێبخانەی QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -87,15 +89,27 @@
         .btn-success:hover {
             background: #059669;
         }
-        /* بەشی پیشاندانی ژمارە و بلیتەکان */
+        /* بەشی QR Code */
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* بەشی ژمارە و بلیتەکان */
         .number-box {
-            font-size: 40px;
+            font-size: 35px;
             font-weight: bold;
             color: #f59e0b;
             background: #090d16;
             border: 2px dashed #f59e0b;
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px;
             margin: 15px 0;
         }
         .tickets-container {
@@ -108,11 +122,10 @@
         .ticket-badge {
             background: #3b82f6;
             color: white;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
         table {
             width: 100%;
@@ -142,18 +155,28 @@
 </head>
 <body>
 
-    <h1>بنکۆی کۆنکان - بلیت و ژمارە</h1>
-    <div class="subtitle">سیستمی دەرکەوتنی ژمارە و ٤ بلیتی جیاواز (بە ٢٠٠)</div>
+    <h1>بنکۆی کۆنکان و دروستکەری QR</h1>
+    <div class="subtitle">بەستەری سایتەکەت یان هەر تێکستێک بگۆڕە بۆ QR Code</div>
 
-    <!-- بەشی دەرکەوتنی ژمارە و بلیتەکان لەسەر شاشە -->
+    <!-- بەشی دروستکردنی QR Code -->
     <div class="card">
-        <h3>تیروپشکی ژمارە و بلیتەکان</h3>
+        <h3>دروستکردنی QR Code ڕاستەوخۆ</h3>
+        <div class="input-group" style="margin-top: 15px;">
+            <input type="text" id="qrText" placeholder="بەستەری سایت یان تێکست بنووسە..." />
+            <button class="btn-success" onclick="generateQR()">درۆستکردن</button>
+        </div>
+        <div id="qrcode"></div>
+    </div>
+
+    <!-- بەشی تیروپشکی ژمارە و بلیتەکان -->
+    <div class="card">
+        <h3>تیروپشکی ژمارە و ٤ بلیتی جیاواز</h3>
         <div class="number-box" id="displayNumber">---</div>
-        <button class="btn-success" onclick="generateRoundTickets()">پێدانی ٤ بلیتی جیاواز (بە ٢٠٠)</button>
+        <button class="btn-success" onclick="generateRoundTickets()">پێدانی ژمارە و بلیتەکان</button>
         
-        <div style="margin-top: 15px; font-weight: bold; color: #cbd5e1;">بلیتە جیاوازەکانی ئەم خولە:</div>
+        <div style="margin-top: 12px; font-weight: bold; color: #cbd5e1; font-size: 13px;">بلیتەکانی ئەم خولە:</div>
         <div class="tickets-container" id="roundTicketsContainer">
-            <span style="color: #94a3b8; font-size: 13px;">هێشتا بلیت دروست نەکراوە... تکایە دوگمەکە بگرە</span>
+            <span style="color: #94a3b8; font-size: 13px;">هێشتا بلیت دروست نەکراوە...</span>
         </div>
     </div>
 
@@ -188,28 +211,45 @@
     </div>
 
     <script>
-        let players = JSON.parse(localStorage.getItem("konkan_v3_players")) || [];
+        // بەشی دروستکردنی QR Code
+        let qrInstance = null;
+        function generateQR() {
+            const text = document.getElementById("qrText").value.trim();
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = "";
 
-        function saveData() {
-            localStorage.setItem("konkan_v3_players", JSON.stringify(players));
+            if (!text) {
+                alert("تکایە بەستەر یان تێکستێک بنووسە!");
+                return;
+            }
+
+            qrInstance = new QRCode(qrContainer, {
+                text: text,
+                width: 160,
+                height: 160,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctErrorLevel: QRCode.CorrectLevel.H
+            });
         }
 
-        // دروستکردنی ژمارەیەک و ٤ بلیتی جیاواز (هەر یەکەیان بە 200 یان جیاواز)
+        // بەشی یاری و تیروپشکی بلیتەکان
+        let players = JSON.parse(localStorage.getItem("konkan_v4_players")) || [];
+
+        function saveData() {
+            localStorage.setItem("konkan_v4_players", JSON.stringify(players));
+        }
+
         function generateRoundTickets() {
-            // ١. دەرکەوتنی ژمارەیەک لەسەر شاشە (بۆ نموونە لە 1 تا 100)
             const randomNum = Math.floor(Math.random() * 90) + 10;
-            document.getElementById("displayNumberinnerText", "displayNumber").innerText = randomNum;
             document.getElementById("displayNumber").innerText = randomNum;
 
-            // ٢. دروستکردنی 4 بلیتی جیاواز (کە هەر بلیتە و بە 200 دەژمێردرێت یان ژمارەی جیاوازن)
             let ticketsContainer = document.getElementById("roundTicketsContainer");
             ticketsContainer.innerHTML = "";
 
             let generatedTickets = [];
             while(generatedTickets.length < 4) {
-                // بلیتەکان دەبنە هێمایەکی جیاواز (بۆ نموونە 200 بە ژمارەی جیاواز وەک: 200-A, 200-B, هتد، یان بڕی خاڵ)
-                let ticketVal = 200 + (Math.floor(Math.random() * 5) * 50); // نموونە: 200، 250، 300، 350
-                // بۆ ئەوەی هەر 4 بلیتەکە جیاواز بن
+                let ticketVal = 200 + (Math.floor(Math.random() * 5) * 50);
                 let ticketString = "بلیت " + (generatedTickets.length + 1) + " (" + ticketVal + ")";
                 if(!generatedTickets.includes(ticketString)) {
                     generatedTickets.push(ticketString);
@@ -243,7 +283,6 @@
             const points = prompt("چەند خاڵ زیاد دەکەیت بۆ " + players[index].name + "؟");
             if (points !== null && !isNaN(points) && points !== "") {
                 players[index].score += parseInt(points);
-                // ئەگەر بگاتە 200 یان زیاتر بلیتێک دەگرێت
                 players[index].ticketsCount = Math.floor(players[index].score / 200);
                 saveData();
                 renderTable();
